@@ -20,10 +20,14 @@ import { Button } from '../ui/button'
 import { FormError } from '../form-error'
 import { FormSuccess } from '../form-sucess'
 import { login } from '@/actions/action'
+import { useSearchParams } from 'next/navigation'
 
 
 
 const LoginForm = () => {
+    const params=useSearchParams();
+    const urlError=params.get("error") ==="OAuthAccountNotLinked"
+    ?"Email already used by different providers!":""
     const [error, setError] = useState<string |undefined>("");
     const [success, setSuccess] = useState<string |undefined>("");
     const [isPending, startTransition] = useTransition()
@@ -41,8 +45,8 @@ const LoginForm = () => {
         startTransition(()=>{
 login(values)
 .then((data)=>{
-    setError(data.error)
-    setSuccess(data.success)
+    setError(data?.error)
+   // setSuccess(data?.success)
 })
         })
         
@@ -52,7 +56,7 @@ login(values)
     <CardWrapper
     headerLabel='Welcome Back'
     backButtonLabel="Don't have an a account?"
-    blackButtonHref='/register'
+    blackButtonHref='/auth/register'
     showSocial
     >
  <Form {...form}>
@@ -93,7 +97,8 @@ login(values)
             )}
             ></FormField>
         </div>
-        <FormError message={error}/>
+        
+        <FormError message={error ||urlError}/>
         <FormSuccess message={success}/>
 <Button
 disabled={isPending}

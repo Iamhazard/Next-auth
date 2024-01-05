@@ -17,7 +17,7 @@ const LoginButton = ({
     const router=useRouter()
     const Onclick=()=>{
         console.log("Button clicked")
-        router.push('/login')
+        router.push('/auth/login')
     }
 if(mode ==="modal"){
     return(

@@ -54,7 +54,7 @@ register(values)
     <CardWrapper
     headerLabel='Create an account'
     backButtonLabel="Already have an account?"
-    blackButtonHref='/login'
+    blackButtonHref='/auth/login'
     showSocial
     >
  <Form {...form}>
