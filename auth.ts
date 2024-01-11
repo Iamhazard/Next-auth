@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { PrismaClient, UserRole } from "@prisma/client";
 import { db } from "./lib/db";
 import { getUserById } from "./data/user";
+import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmations";
 
 export const {
   handlers: { GET, POST },
@@ -25,6 +26,7 @@ export const {
   },
   callbacks: {
     async signIn({ user, account }) {
+      console.log(" account form auth", account);
       //Allow Oauth without email verification
       if (account?.provider !== "credentials") return true;
 
@@ -37,20 +39,34 @@ export const {
       }
 
       //@fA check
+      if (existingUser.isTwoFactorEnabled) {
+        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
+          existingUser.id
+        );
+        if (!twoFactorConfirmation) return false;
+      }
 
       return true;
     },
 
     async session({ token, session }) {
-      console.log({ sessionToken: token });
+      //console.log({ sessionToken: token });
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }
 
       if (token.role && session.user) {
-        session.user.id = token.role as UserRole;
+        session.user.role = token.role as UserRole;
+      }
+      if (session.user) {
+        session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean;
       }
 
+      if (session.user) {
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.isOAuth = token.isOAuth as boolean;
+      }
       return session;
     },
     async jwt({ token }) {
