@@ -21,6 +21,7 @@ import { FormSuccess } from "../form-sucess";
 import { NewPasswordSchema } from "@/Schemas";
 import { reset } from "@/actions/reset";
 import { useSearchParams } from "next/navigation";
+import { newPassword } from "@/actions/new-password";
 
 const NewPasswordForm = () => {
   const searchParams = useSearchParams();
@@ -40,7 +41,7 @@ const NewPasswordForm = () => {
     setSuccess("");
 
     startTransition(() => {
-      reset(values).then((data) => {
+      newPassword(values, token).then((data) => {
         setError(data?.error);
         setSuccess(data?.success);
       });
