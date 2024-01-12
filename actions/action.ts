@@ -16,13 +16,13 @@ export const login = async (
   values: z.infer<typeof LoginSchema>,
   callbackUrl?: string | null
 ) => {
-  const validatedFiled = LoginSchema.safeParse(values);
+  const validatedFields = LoginSchema.safeParse(values);
 
-  if (!validatedFiled.success) {
-    return { error: "Invalid fields" };
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
   }
 
-  const { email, password, code } = validatedFiled.data;
+  const { email, password, code } = validatedFields.data;
 
   const existingUser = await getUserByEmail(email);
 
@@ -39,24 +39,28 @@ export const login = async (
       verificationToken.email,
       verificationToken.token
     );
-    return { success: "Confirmation email sent" };
+
+    return { success: "Confirmation email sent!" };
   }
 
   if (existingUser.isTwoFactorEnabled && existingUser.email) {
     if (code) {
-      //to verify code
       const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email);
+
       if (!twoFactorToken) {
         return { error: "Invalid code!" };
       }
+
       if (twoFactorToken.token !== code) {
         return { error: "Invalid code!" };
       }
+
       const hasExpired = new Date(twoFactorToken.expires) < new Date();
 
       if (hasExpired) {
         return { error: "Code expired!" };
       }
+
       await db.twoFactorToken.delete({
         where: { id: twoFactorToken.id },
       });
@@ -70,6 +74,7 @@ export const login = async (
           where: { id: existingConfirmation.id },
         });
       }
+
       await db.twoFactorConfirmation.create({
         data: {
           userId: existingUser.id,
@@ -78,6 +83,7 @@ export const login = async (
     } else {
       const twoFactorToken = await generateTwoFactorToken(existingUser.email);
       await sendTwoFactorTokenEmail(twoFactorToken.email, twoFactorToken.token);
+
       return { twoFactor: true };
     }
   }
@@ -91,7 +97,7 @@ export const login = async (
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
-        case "credentials":
+        case "CredentialsSigning":
           return { error: "Invalid credentials!" };
         default:
           return { error: "Something went wrong!" };
