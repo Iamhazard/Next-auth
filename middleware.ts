@@ -1,6 +1,5 @@
-
-import authConfig from "./auth.config"
- import NextAuth from "next-auth"
+import authConfig from "./auth.config";
+import NextAuth from "next-auth";
 import {
   DEFAULT_LOGIN_REDIRECT,
   apiAuthPrefix,
@@ -8,13 +7,13 @@ import {
   publicRoutes,
 } from "@/route";
 
- const { auth } = NextAuth(authConfig)
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
-   const { nextUrl } = req;
-const isLoggedIn=!!req.auth;
-// console.log("Route",req.nextUrl.pathname)
-//   console.log("Login state",isLoggedIn)
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
+  // console.log("Route",req.nextUrl.pathname)
+  //   console.log("Login state",isLoggedIn)
   // req.auth
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
@@ -27,26 +26,30 @@ const isLoggedIn=!!req.auth;
 
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
     return null;
   }
 
   if (!isLoggedIn && !isPublicRoute) {
-    return Response.redirect(new URL ("/auth/login",nextUrl))
+    let callbackUrl = nextUrl.pathname;
+    if (nextUrl.search) {
+      callbackUrl += nextUrl.search;
     }
 
-   return null;
+    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
 
-   
+    return Response.redirect(
+      new URL(`/auth/login?callbackUrl=${encodedCallbackUrl}`, nextUrl)
+    );
+  }
 
-})
-
-
+  return null;
+});
 
 // Optionally, don't invoke Middleware on some paths
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
-}
+};
 
 // export const { auth: middleware } = NextAuth(authConfig)
