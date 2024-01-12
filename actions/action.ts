@@ -91,12 +91,13 @@ export const login = async (
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
-        case "CredentialsSigning":
-          return { error: "Wrong email or password." };
+        case "credentials":
+          return { error: "Invalid credentials!" };
         default:
-          return { error: "Something went Wrong" };
+          return { error: "Something went wrong!" };
       }
     }
+
     throw error;
   }
 };
