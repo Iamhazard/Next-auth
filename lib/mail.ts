@@ -1,4 +1,3 @@
-import { NEXT_URL } from "next/dist/client/components/app-router-headers";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
